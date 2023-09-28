@@ -1,7 +1,6 @@
 package sls
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -51,7 +50,7 @@ func formatJsonValue(input json.RawMessage) (output string, err error) {
 
 	switch input[0] {
 	case '"':
-		output = string(bytes.Trim(input, `"`))
+		err = json.Unmarshal(input, &output)
 	case '[', '{':
 		var data []byte
 		if data, err = json.Marshal(input); err == nil {
