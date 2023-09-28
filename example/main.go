@@ -18,19 +18,25 @@ func main() {
 
 	// Config 字段详细说明请看 Config 的字段注释
 	writer, err := sls.New(sls.Config{
-		Endpoint:     os.Getenv("APP_ENDPOINT"),                                  // 阿里云日志接入端点, 如: cn-hangzhou-intranet.log.aliyuncs.com
-		AccessKey:    os.Getenv("APP_KEY"),                                       // App Key
-		AccessSecret: os.Getenv("APP_SECRET"),                                    // App 密钥
-		Project:      os.Getenv("APP_PROJECT"),                                   // 日志 Project
-		Store:        os.Getenv("APP_STORE"),                                     // 日志 Store
-		Topic:        os.Getenv("APP_TOPIC"),                                     // 日志 topic 字段
-		Source:       "",                                                         // 日志 source 字段, 默认为 Hostname
-		Timeout:      10 * time.Second,                                           // Push 数据超时时间, 默认 1s
-		OnError:      func(err error) { log.Printf("[EXAMPLE] error: %s", err) }, // 错误回调
+		Endpoint:     os.Getenv("APP_ENDPOINT"), // 阿里云日志接入端点, 如: cn-hangzhou-intranet.log.aliyuncs.com
+		AccessKey:    os.Getenv("APP_KEY"),      // App Key
+		AccessSecret: os.Getenv("APP_SECRET"),   // App 密钥
+		Project:      os.Getenv("APP_PROJECT"),  // 日志 Project
+		Store:        os.Getenv("APP_STORE"),    // 日志 Store
+		Topic:        os.Getenv("APP_TOPIC"),    // 日志 topic 字段
+		Source:       "",                        // 可选 日志 source 字段, 默认为 Hostname
+		Timeout:      10 * time.Second,          // 可选 Push 数据超时时间, 默认 1s
+		UseHttps:     true,                      // 可选 是否使用 https 调用 PutLogs 接口 (若接入端点是公网建议 https)
+		// 可选的错误回调
+		OnError: func(err error) {
+			log.Printf("[EXAMPLE] error: %s", err)
+		},
+		// 可选的日志修改
 		MessageModifier: modifiers.Chain{
 			modifiers.RemapLevelToSysLog(), // 将 slog 的 level 字段重写成 syslog 格式
 			modifiers.RenameMessageField(), // 将 slog 的 msg 字段重命名成 message
 		},
+		// 可选的日志过滤
 		MessageFilter: filters.Chain{
 			filters.InfoLevel(), // 只推送 Info 及以上 Level 到服务器
 		},

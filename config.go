@@ -31,10 +31,11 @@ type Config struct {
 	BufferSize      int             // 本地缓存日志条数, 可选, 默认为 100
 	Timeout         time.Duration   // 写缓存最大等待时间, 可选, 默认为 1s
 	Interval        time.Duration   // 缓存刷新间隔, 可选, 默认为 3s
-	HttpClient      *http.Client    // HTTP 客户端, 可选, 默认为 DefaultClient
+	HttpClient      *http.Client    // HTTP 客户端, 可选, 默认为 http.DefaultClient
 	MessageModifier MessageModifier // 在发送前编辑日志内容, 可选, 默认为空
 	MessageFilter   MessageFilter   // 在发送前过滤日志内容, 可选, 默认为空
-	OnError         ErrorListener   // 错误回调
+	OnError         ErrorListener   // 错误回调, 可选, 默认为空
+	UseHttps        bool            // 是否在调用 PutLogs 时使用 Https, 可选, 默认为 false
 	uri             *url.URL
 }
 
@@ -60,8 +61,13 @@ func (c *Config) validate() (err error) {
 		c.HttpClient = http.DefaultClient
 	}
 
+	protocol := "http"
+	if c.UseHttps {
+		protocol = "https"
+	}
+
 	c.uri, err = url.Parse(fmt.Sprintf(
-		"http://%s.%s/logstores/%s/shards/lb", c.Project, c.Endpoint, c.Store))
+		"%s://%s.%s/logstores/%s/shards/lb", protocol, c.Project, c.Endpoint, c.Store))
 	if err != nil {
 		return validator.IllegalArgument("Endpoint", err.Error())
 	}
